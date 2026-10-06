@@ -1,0 +1,2199 @@
+# 🚀 BUILD-TO-SHIP: FOOD EXPIRY TRACKER
+## Hackathon Production-Ready Application — FN8
+
+You are an expert full-stack engineer, UI/UX designer, database architect, and hackathon product builder.
+
+Build a **complete, production-quality web application** called:
+
+# 🥗 FreshTrack — Smart Food Expiry Tracker
+
+The application is being built for a hackathon based on this problem statement:
+
+> **Problem ID: FN8 — Food Expiry Tracker**
+>
+> Create an application that tracks food products at home and reminds users before expiry.
+
+The goal is to build a polished, intuitive application that solves the problem substantially better than a basic CRUD application.
+
+---
+
+# 1. CORE OBJECTIVE
+
+Build a web application that allows users to:
+
+1. Create an account and securely log in.
+2. Add food products stored at home.
+3. Track expiry dates.
+4. See which foods are:
+   - Fresh
+   - Expiring soon
+   - Expired
+5. Receive/see reminders before food expires.
+6. Search, filter, sort, and manage food inventory.
+7. Edit and delete food items.
+8. View useful statistics about household food.
+9. Prioritize foods that need attention.
+10. Reduce food waste by helping users consume food before it expires.
+
+The final application must feel like a real startup-quality product, not a basic student CRUD project.
+
+---
+
+# 2. REQUIRED TECHNOLOGY STACK
+
+Use the following stack unless there is a strong technical reason not to:
+
+## Frontend
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui or another polished component system
+- Lucide React icons
+- React Router
+- TanStack Query where useful
+- React Hook Form
+- Zod validation
+- Recharts for analytics
+
+## Backend / Database
+
+Use **Supabase** as the backend.
+
+Required:
+
+- Supabase PostgreSQL
+- Supabase Authentication
+- Supabase Row Level Security
+- Supabase JavaScript client
+- PostgreSQL relationships
+- Database indexes where useful
+
+DO NOT replace Supabase with:
+
+- Firebase
+- MongoDB
+- localStorage as the primary database
+- SQLite
+- an in-memory database
+
+Supabase must be the actual persistent backend.
+
+---
+
+# 3. ENVIRONMENT VARIABLES
+
+Create and use:
+
+VITE_SUPABASE_URL
+
+VITE_SUPABASE_ANON_KEY
+
+Do not hardcode credentials anywhere.
+
+Create a `.env.example` file containing:
+
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+
+Make sure the application gracefully handles missing environment variables and displays a useful configuration message during development.
+
+---
+
+# 4. AUTHENTICATION
+
+Authentication is mandatory.
+
+Create a beautiful authentication experience.
+
+## Authentication pages
+
+Create:
+
+- `/login`
+- `/signup`
+- `/forgot-password`
+- `/reset-password`
+
+Use Supabase Auth.
+
+Support:
+
+### Sign Up
+
+Fields:
+
+- Full Name
+- Email
+- Password
+- Confirm Password
+
+Validation:
+
+- valid email
+- password minimum 8 characters
+- passwords must match
+
+After signup:
+
+- create the Supabase auth user
+- create the corresponding profile row
+- redirect to onboarding/dashboard
+
+### Login
+
+Fields:
+
+- Email
+- Password
+
+Include:
+
+- Remember session
+- Forgot password
+- Link to create account
+
+### Forgot Password
+
+Allow users to request a password reset email using Supabase.
+
+### Reset Password
+
+Allow users to create a new password.
+
+### Logout
+
+Provide logout functionality in the user menu.
+
+---
+
+# 5. USER PROFILE
+
+Create a `profiles` table.
+
+Suggested fields:
+
+- id UUID primary key referencing auth.users(id)
+- full_name
+- email
+- avatar_url
+- household_name
+- notification_enabled
+- reminder_days_before
+- created_at
+- updated_at
+
+Use Supabase Row Level Security.
+
+A user must only be able to read/update their own profile.
+
+---
+
+# 6. DATABASE DESIGN
+
+Create the required Supabase SQL migration.
+
+The database must include at minimum:
+
+## profiles
+
+Fields:
+
+- id
+- full_name
+- email
+- avatar_url
+- household_name
+- notification_enabled
+- reminder_days_before
+- created_at
+- updated_at
+
+---
+
+## food_items
+
+Fields:
+
+- id UUID primary key
+- user_id UUID references profiles(id)
+- name TEXT NOT NULL
+- category TEXT
+- quantity NUMERIC
+- unit TEXT
+- purchase_date DATE
+- expiry_date DATE NOT NULL
+- storage_location TEXT
+- brand TEXT
+- notes TEXT
+- image_url TEXT nullable
+- created_at TIMESTAMP
+- updated_at TIMESTAMP
+
+Possible categories:
+
+- Dairy
+- Fruits
+- Vegetables
+- Meat
+- Seafood
+- Grains
+- Bakery
+- Snacks
+- Beverages
+- Frozen
+- Canned
+- Condiments
+- Other
+
+Possible storage locations:
+
+- Refrigerator
+- Freezer
+- Pantry
+- Kitchen Counter
+- Other
+
+---
+
+## notifications
+
+Fields:
+
+- id UUID primary key
+- user_id UUID references profiles(id)
+- food_item_id UUID references food_items(id)
+- type TEXT
+- title TEXT
+- message TEXT
+- is_read BOOLEAN
+- created_at TIMESTAMP
+
+Notification types:
+
+- expiring_soon
+- expired
+- system
+
+---
+
+## consumption_logs
+
+Fields:
+
+- id UUID primary key
+- user_id UUID references profiles(id)
+- food_item_id UUID references food_items(id)
+- quantity_used NUMERIC
+- consumed_at TIMESTAMP
+- notes TEXT
+
+This table can be used for future analytics.
+
+---
+
+# 7. DATABASE SECURITY
+
+Implement proper Supabase Row Level Security.
+
+Users must only be able to:
+
+- read their own food items
+- insert their own food items
+- update their own food items
+- delete their own food items
+- read their own notifications
+- update their own notifications
+- read/write their own consumption logs
+- read/update their own profile
+
+Never expose another user's data.
+
+Use policies based on:
+
+auth.uid() = user_id
+
+or the appropriate profile relationship.
+
+Do not disable RLS.
+
+---
+
+# 8. INDEXES
+
+Create useful indexes for:
+
+- food_items.user_id
+- food_items.expiry_date
+- food_items.category
+- notifications.user_id
+- notifications.is_read
+- consumption_logs.user_id
+
+Optimize queries for dashboard loading.
+
+---
+
+# 9. APPLICATION STRUCTURE
+
+Create a clean application structure.
+
+Suggested routes:
+
+/
+
+ /login
+
+ /signup
+
+ /forgot-password
+
+ /reset-password
+
+ /dashboard
+
+ /inventory
+
+ /inventory/add
+
+ /inventory/:id
+
+ /inventory/:id/edit
+
+ /notifications
+
+ /analytics
+
+ /settings
+
+ /profile
+
+---
+
+# 10. LANDING PAGE
+
+Create a polished landing page.
+
+Hero section:
+
+# "Never Waste Food Again."
+
+Subtitle:
+
+"Track what's in your kitchen, know what's expiring, and make every meal count."
+
+Primary CTA:
+
+"Start Tracking"
+
+Secondary CTA:
+
+"See How It Works"
+
+Include a visually appealing food/kitchen illustration or generated visual.
+
+Sections:
+
+### Problem
+
+Food gets forgotten in refrigerators and pantries.
+
+### Solution
+
+FreshTrack keeps everything organized and reminds users before food expires.
+
+### How it works
+
+1. Add your food
+2. Track expiry dates
+3. Get reminders
+4. Use food before it goes to waste
+
+### Features
+
+- Smart expiry tracking
+- Expiry reminders
+- Inventory management
+- Food categories
+- Search & filtering
+- Analytics
+- Waste reduction
+
+### CTA
+
+"Start your food-saving journey today."
+
+---
+
+# 11. APP SHELL
+
+After authentication, use a dashboard application layout.
+
+Desktop:
+
+- left sidebar
+- main content
+- top header
+
+Mobile:
+
+- bottom navigation or collapsible sidebar
+- responsive header
+
+Sidebar:
+
+🥗 FreshTrack
+
+Navigation:
+
+- Dashboard
+- My Inventory
+- Add Food
+- Expiring Soon
+- Notifications
+- Analytics
+- Settings
+
+Bottom:
+
+- User avatar
+- User name
+- Settings
+- Logout
+
+---
+
+# 12. DASHBOARD
+
+The dashboard is the most important screen.
+
+Create a polished overview.
+
+Header:
+
+"Good morning, {firstName}! 👋"
+
+Subtitle:
+
+"Here's what's happening in your kitchen."
+
+Display summary cards:
+
+### Total Items
+
+Example:
+
+42
+
+### Expiring Soon
+
+Example:
+
+7
+
+### Expired
+
+Example:
+
+3
+
+### Fresh
+
+Example:
+
+32
+
+Use dynamic values from Supabase.
+
+Do NOT hardcode these numbers.
+
+---
+
+# 13. EXPIRY STATUS LOGIC
+
+Calculate food status dynamically.
+
+Rules:
+
+### Expired
+
+expiry_date < today
+
+### Expiring Today
+
+expiry_date = today
+
+### Expiring Soon
+
+expiry date is within the next 3 days
+
+### Fresh
+
+expiry date is more than 3 days away
+
+Make this logic reusable in a utility function.
+
+Example:
+
+getExpiryStatus(expiryDate)
+
+returns:
+
+- expired
+- today
+- soon
+- fresh
+
+Also calculate:
+
+daysRemaining
+
+---
+
+# 14. URGENCY VISUALIZATION
+
+Use strong but tasteful visual hierarchy.
+
+Expired:
+
+- red
+- "Expired"
+
+Expires today:
+
+- orange/red
+- "Expires Today"
+
+1–3 days:
+
+- amber
+- "Expires in 2 days"
+
+4+ days:
+
+- green
+- "Fresh"
+
+Do not make the interface visually overwhelming.
+
+---
+
+# 15. DASHBOARD SECTIONS
+
+Include:
+
+## Expiring Soon
+
+Show the most urgent food items.
+
+Each card should contain:
+
+- food name
+- category
+- quantity
+- expiry date
+- days remaining
+- storage location
+- status badge
+- edit button
+
+Add:
+
+"View All"
+
+---
+
+## Recently Added
+
+Show recently added food.
+
+---
+
+## Food Distribution
+
+Create a chart showing items by category.
+
+Use Recharts.
+
+Example:
+
+Dairy — 8
+Vegetables — 12
+Fruits — 7
+Meat — 5
+Other — 10
+
+Data must come from Supabase.
+
+---
+
+## Expiry Timeline
+
+Create a visual timeline for upcoming expiry dates.
+
+---
+
+# 16. ADD FOOD PAGE
+
+Create a beautiful form.
+
+Fields:
+
+### Food Name
+
+Example:
+
+"Milk"
+
+### Category
+
+Dropdown.
+
+### Quantity
+
+Example:
+
+"2"
+
+### Unit
+
+Options:
+
+- kg
+- g
+- L
+- ml
+- pieces
+- packets
+- boxes
+- bottles
+- cans
+
+### Purchase Date
+
+Date picker.
+
+### Expiry Date
+
+Date picker.
+
+Make expiry date required.
+
+### Storage Location
+
+Dropdown.
+
+### Brand
+
+Optional.
+
+### Notes
+
+Optional textarea.
+
+### Image
+
+Optional.
+
+If image uploads are implemented, use Supabase Storage.
+
+Otherwise provide a polished image placeholder and make the architecture ready for storage.
+
+Button:
+
+"Add Food"
+
+After successful submission:
+
+- show success toast
+- save to Supabase
+- invalidate/refetch inventory
+- redirect to inventory/dashboard
+
+---
+
+# 17. SMART DEFAULTS
+
+Make adding food fast.
+
+When purchase date is selected, allow convenient expiry-date selection.
+
+Include common expiry presets:
+
+- 1 day
+- 3 days
+- 7 days
+- 14 days
+- 30 days
+- 3 months
+
+The user can still choose a custom date.
+
+---
+
+# 18. INVENTORY PAGE
+
+Create `/inventory`.
+
+Title:
+
+"My Food Inventory"
+
+Include:
+
+### Search
+
+Search by:
+
+- name
+- brand
+- category
+
+### Filters
+
+- All
+- Fresh
+- Expiring Soon
+- Expired
+
+Additional filters:
+
+- Category
+- Storage location
+
+### Sort
+
+- Expiry date: nearest first
+- Expiry date: latest first
+- Recently added
+- Name A-Z
+- Name Z-A
+
+Display food cards or a responsive table.
+
+Desktop can use a table.
+
+Mobile should use cards.
+
+Each item:
+
+- name
+- category
+- quantity
+- expiry
+- status
+- location
+- actions
+
+Actions:
+
+- View
+- Edit
+- Delete
+
+---
+
+# 19. FOOD DETAILS PAGE
+
+Create `/inventory/:id`.
+
+Show:
+
+- large food image/illustration
+- food name
+- category
+- brand
+- quantity
+- unit
+- purchase date
+- expiry date
+- storage location
+- notes
+- status
+- days remaining
+
+Include buttons:
+
+"Edit Food"
+
+"Mark as Consumed"
+
+"Delete"
+
+---
+
+# 20. MARK AS CONSUMED
+
+When the user marks an item as consumed:
+
+Option 1:
+
+For quantity-based items:
+
+ask:
+
+"How much did you use?"
+
+Then create a consumption log.
+
+If quantity reaches zero:
+
+remove/archive the food item.
+
+Option 2:
+
+Provide:
+
+"Consumed Entire Item"
+
+This creates a consumption log and removes it from active inventory.
+
+Show a success message:
+
+"Nice! You saved this food from going to waste 🎉"
+
+---
+
+# 21. EDIT FOOD
+
+Allow all food fields to be updated.
+
+Use React Hook Form + Zod.
+
+Validate data before submission.
+
+Show loading state while saving.
+
+Show success/error toast.
+
+---
+
+# 22. DELETE FOOD
+
+Do not immediately delete without confirmation.
+
+Show modal:
+
+"Delete this food item?"
+
+"Are you sure you want to remove Milk from your inventory?"
+
+Buttons:
+
+Cancel
+
+Delete
+
+---
+
+# 23. NOTIFICATION SYSTEM
+
+Create a dedicated notifications page.
+
+Route:
+
+/notifications
+
+Notifications should show:
+
+### Expired
+
+"Your milk expired today."
+
+### Expiring Soon
+
+"Your strawberries expire in 2 days."
+
+### System
+
+"Welcome to FreshTrack!"
+
+Each notification should have:
+
+- icon
+- title
+- message
+- timestamp
+- read/unread status
+
+Unread notifications should be visually highlighted.
+
+Provide:
+
+"Mark all as read"
+
+---
+
+# 24. EXPIRY REMINDER LOGIC
+
+The application must identify food that needs attention.
+
+For each food item:
+
+If expiry date is today:
+
+Create an urgent notification.
+
+If expiry is within the user's reminder window:
+
+Create a reminder.
+
+Default reminder window:
+
+3 days.
+
+Allow users to configure:
+
+1 day
+2 days
+3 days
+5 days
+7 days
+
+IMPORTANT:
+
+Avoid creating duplicate notifications every time the dashboard loads.
+
+Implement a strategy to prevent duplicate reminders.
+
+For example:
+
+Before creating a reminder, check whether an equivalent unread/read notification already exists for that food item and expiry date.
+
+---
+
+# 25. NOTIFICATION BELL
+
+Add a notification bell to the top navigation.
+
+Show unread count.
+
+Example:
+
+🔔 4
+
+Clicking the bell opens a dropdown showing recent notifications.
+
+Include:
+
+"View all notifications"
+
+---
+
+# 26. ANALYTICS PAGE
+
+Create `/analytics`.
+
+Title:
+
+"Food Insights"
+
+Show:
+
+### Total Food Tracked
+
+### Items Consumed
+
+### Items Expired
+
+### Estimated Waste
+
+If actual cost data is not collected, DO NOT invent financial values.
+
+Instead provide meaningful inventory statistics.
+
+Charts:
+
+1. Food by category
+2. Expired vs consumed
+3. Expiry distribution
+4. Items added over time
+5. Consumption trends
+
+Use Recharts.
+
+Make charts responsive.
+
+---
+
+# 27. FOOD WASTE INSIGHT
+
+Create an insight card.
+
+Examples:
+
+"💡 You have 5 items expiring within 3 days."
+
+"You've consumed 18 food items this month."
+
+"Your vegetables are the category with the most upcoming expiries."
+
+Calculate these dynamically from actual database data.
+
+---
+
+# 28. SETTINGS
+
+Create `/settings`.
+
+Sections:
+
+## Notifications
+
+Toggle:
+
+Enable expiry reminders
+
+Reminder timing:
+
+1 day
+2 days
+3 days
+5 days
+7 days
+
+## Profile
+
+Allow:
+
+- name
+- household name
+- email display
+
+## Appearance
+
+Support:
+
+- Light
+- Dark
+- System
+
+Persist theme preference.
+
+---
+
+# 29. EMPTY STATES
+
+Every major section must have a useful empty state.
+
+Inventory empty:
+
+"Your kitchen is empty... let's change that!"
+
+Button:
+
+"Add Your First Food"
+
+No expiring foods:
+
+"You're all caught up! 🎉"
+
+No notifications:
+
+"You're all clear."
+
+Analytics with insufficient data:
+
+"Add a few food items to unlock your insights."
+
+---
+
+# 30. LOADING STATES
+
+Never show blank screens.
+
+Use:
+
+- skeleton loaders
+- spinners where appropriate
+- disabled buttons during submission
+
+Dashboard should have skeleton cards while loading.
+
+Inventory should have skeleton rows/cards.
+
+---
+
+# 31. ERROR HANDLING
+
+Handle:
+
+- Supabase unavailable
+- authentication failure
+- database failure
+- invalid forms
+- network errors
+- unauthorized requests
+- missing records
+
+Display human-friendly messages.
+
+Never expose raw database errors to users.
+
+Example:
+
+Bad:
+
+"PostgrestException code 23505..."
+
+Good:
+
+"We couldn't save this food item. Please try again."
+
+---
+
+# 32. RESPONSIVE DESIGN
+
+The application must work beautifully on:
+
+- desktop
+- laptop
+- tablet
+- mobile
+
+Mobile width:
+
+320px+
+
+Do not create horizontal scrolling.
+
+Forms should become one-column on mobile.
+
+Tables should transform into cards or become horizontally scrollable only where necessary.
+
+Navigation should be mobile friendly.
+
+---
+
+# 33. UI DESIGN SYSTEM
+
+Use a modern fresh-food aesthetic.
+
+Suggested visual direction:
+
+- clean white/neutral backgrounds
+- fresh green accent
+- subtle warm colors
+- rounded cards
+- soft shadows
+- modern typography
+- generous spacing
+- high-quality icons
+
+Avoid:
+
+- excessive gradients
+- excessive animations
+- clutter
+- overly bright colors
+- generic Bootstrap-looking UI
+
+The design should feel like a modern health/food SaaS application.
+
+---
+
+# 34. MICRO-INTERACTIONS
+
+Add tasteful animations:
+
+- page transitions
+- button hover
+- card hover
+- toast notifications
+- modal transitions
+- progress indicators
+
+Do not over-animate.
+
+Use accessible motion preferences where possible.
+
+---
+
+# 35. ACCESSIBILITY
+
+Implement:
+
+- semantic HTML
+- keyboard navigation
+- visible focus states
+- labels for form inputs
+- accessible buttons
+- sufficient contrast
+- aria labels where needed
+
+Do not rely solely on colors to communicate status.
+
+Example:
+
+Expired
+
+🔴 Expired
+
+not just a red border.
+
+---
+
+# 36. SEARCH UX
+
+Search should feel instant.
+
+Use debounced search where appropriate.
+
+Search:
+
+- food name
+- brand
+- notes
+
+Display:
+
+"No foods found for 'xyz'."
+
+---
+
+# 37. DEMO DATA
+
+Create a development/demo seed strategy.
+
+Include realistic example foods:
+
+- Milk
+- Eggs
+- Yogurt
+- Tomatoes
+- Spinach
+- Apples
+- Chicken Breast
+- Bread
+- Cheese
+- Orange Juice
+- Rice
+- Frozen Peas
+
+Use realistic expiry dates.
+
+IMPORTANT:
+
+Demo data must belong to the authenticated demo user and must never expose data between users.
+
+---
+
+# 38. DEMO EXPERIENCE
+
+Create a polished first-run experience.
+
+After signup:
+
+Show a short onboarding modal:
+
+"Welcome to FreshTrack! 🥗"
+
+Steps:
+
+1. Add your first food.
+2. Set its expiry date.
+3. We'll help you remember it.
+
+CTA:
+
+"Add First Food"
+
+Allow:
+
+"Skip for now"
+
+---
+
+# 39. SAMPLE DASHBOARD
+
+For the demo, the dashboard should immediately communicate the value.
+
+Example:
+
+Total items: 18
+
+Fresh: 10
+
+Expiring soon: 5
+
+Expired: 3
+
+Upcoming expiry list:
+
+🥛 Milk — expires tomorrow
+
+🍓 Strawberries — expires in 2 days
+
+🥬 Spinach — expires in 3 days
+
+🍞 Bread — expires in 4 days
+
+Make these values dynamic when data exists.
+
+---
+
+# 40. SECURITY REQUIREMENTS
+
+NEVER:
+
+- expose Supabase service-role key in frontend
+- store passwords manually
+- bypass authentication
+- disable RLS
+- trust user_id sent blindly from frontend
+- expose other users' records
+
+Use Supabase Auth.
+
+Use `auth.uid()` based RLS policies.
+
+Never put secrets in source code.
+
+---
+
+# 41. DATA VALIDATION
+
+Use Zod.
+
+Food validation:
+
+name:
+- required
+- minimum 2 characters
+
+quantity:
+- positive number
+
+expiry_date:
+- required
+
+expiry date should not be before purchase date.
+
+Show friendly validation messages.
+
+---
+
+# 42. DATABASE MIGRATION
+
+Create a SQL migration file containing:
+
+- extensions if required
+- tables
+- foreign keys
+- indexes
+- constraints
+- RLS
+- RLS policies
+- useful triggers if required
+
+Also create:
+
+`supabase/README.md`
+
+Explain exactly how to run the migration in Supabase.
+
+---
+
+# 43. UPDATED_AT TRIGGER
+
+Implement an appropriate PostgreSQL trigger/function so that:
+
+updated_at
+
+automatically updates whenever records are modified.
+
+Use it for:
+
+- profiles
+- food_items
+
+---
+
+# 44. PROFILE CREATION
+
+Handle new Supabase users cleanly.
+
+When a user registers:
+
+create their profile.
+
+Prefer a secure Supabase/Postgres trigger for creating the profile from `auth.users`, or implement a reliable authenticated flow if a trigger is unsuitable.
+
+Never create profiles for arbitrary user IDs.
+
+---
+
+# 45. API / DATA LAYER
+
+Create a clean service/data layer.
+
+Do not scatter Supabase queries everywhere.
+
+For example:
+
+services/
+  foodService.ts
+  notificationService.ts
+  profileService.ts
+  analyticsService.ts
+
+Create reusable functions such as:
+
+getFoodItems()
+
+getFoodItem(id)
+
+createFoodItem()
+
+updateFoodItem()
+
+deleteFoodItem()
+
+getExpiringItems()
+
+getNotifications()
+
+markNotificationRead()
+
+markAllNotificationsRead()
+
+getAnalytics()
+
+markFoodConsumed()
+
+This makes the application maintainable.
+
+---
+
+# 46. STATE MANAGEMENT
+
+Use React Query/TanStack Query where appropriate for:
+
+- server state
+- caching
+- refetching
+- mutations
+- loading states
+
+After creating/editing/deleting food:
+
+properly invalidate related queries.
+
+Do not require a full page refresh to see changes.
+
+---
+
+# 47. TOAST SYSTEM
+
+Use toast notifications for actions.
+
+Examples:
+
+Success:
+
+"Milk added successfully."
+
+"Food item updated."
+
+"Food item deleted."
+
+"Marked as consumed."
+
+Error:
+
+"Something went wrong. Please try again."
+
+---
+
+# 48. PERFORMANCE
+
+Optimize:
+
+- database queries
+- unnecessary React renders
+- image loading
+- chart rendering
+
+Do not fetch the entire database repeatedly if only summary statistics are needed.
+
+Use efficient queries.
+
+---
+
+# 49. PWA / INSTALLABLE EXPERIENCE
+
+If practical within the Replit environment, make the application PWA-ready.
+
+Add:
+
+- manifest
+- app icons
+- mobile-friendly layout
+- appropriate metadata
+
+This is optional but desirable.
+
+---
+
+# 50. SEO / METADATA
+
+Set:
+
+Title:
+
+FreshTrack — Never Waste Food Again
+
+Description:
+
+Track your food inventory and get reminders before your food expires.
+
+Use appropriate favicon/app metadata.
+
+---
+
+# 51. DEMO-FRIENDLY FEATURES
+
+Add a "Quick Add" experience.
+
+On dashboard:
+
+`+ Add Food`
+
+Clicking it opens the add-food flow.
+
+Also provide quick expiry presets.
+
+---
+
+# 52. SMART FOOD SUGGESTIONS
+
+If there are items expiring soon, show:
+
+## "Eat These First 🍽️"
+
+List the top 3 foods with the nearest expiry.
+
+Example:
+
+1. Milk — 1 day left
+2. Spinach — 2 days left
+3. Yogurt — 2 days left
+
+This is a key differentiating feature.
+
+---
+
+# 53. "TODAY'S PRIORITY"
+
+Add a dashboard section:
+
+## Today's Priority
+
+If there are expired foods:
+
+"Remove these expired items."
+
+If foods expire today:
+
+"Use these foods today."
+
+If nothing is urgent:
+
+"You're all caught up! Your kitchen is looking good."
+
+Make this dynamic.
+
+---
+
+# 54. EXPIRY COUNTDOWN
+
+On food cards show:
+
+- "Expired 2 days ago"
+- "Expires today"
+- "Expires tomorrow"
+- "2 days left"
+- "12 days left"
+
+Do not show confusing raw date information only.
+
+Show both:
+
+"Oct 8, 2026"
+
+"2 days left"
+
+---
+
+# 55. DATE/TIME HANDLING
+
+Be careful with timezone issues.
+
+Food expiry is date-based, not timestamp-based.
+
+Avoid converting expiry dates into UTC timestamps in a way that causes an item to shift to the previous/next day.
+
+Use PostgreSQL DATE for expiry_date.
+
+---
+
+# 56. SECURITY CHECK
+
+Before finishing, verify:
+
+- RLS enabled on every user-owned table
+- user A cannot access user B's food
+- user A cannot modify user B's food
+- notifications are isolated
+- consumption logs are isolated
+- profiles are isolated
+- service keys are never exposed
+
+---
+
+# 57. TESTING
+
+Add useful tests where practical.
+
+Test:
+
+1. signup
+2. login
+3. logout
+4. adding food
+5. editing food
+6. deleting food
+7. expiry calculation
+8. filtering
+9. searching
+10. notification creation
+11. marking food consumed
+12. dashboard statistics
+
+At minimum, thoroughly test expiry-status logic.
+
+---
+
+# 58. EDGE CASES
+
+Handle:
+
+- expiry today
+- expiry tomorrow
+- expiry yesterday
+- expired several weeks ago
+- no food items
+- one food item
+- hundreds of food items
+- missing optional fields
+- duplicate food names
+- invalid dates
+- network failures
+- session expiration
+- deleted food referenced by notification
+
+---
+
+# 59. POLISHED AUTH EXPERIENCE
+
+Authentication pages should visually match the main application.
+
+Left side on desktop:
+
+FreshTrack branding and food-themed visual.
+
+Right side:
+
+Authentication form.
+
+On mobile:
+
+Centered authentication card.
+
+Include:
+
+"Already have an account?"
+
+"Don't have an account?"
+
+---
+
+# 60. USER EXPERIENCE COPY
+
+Use friendly language.
+
+Prefer:
+
+"Your kitchen is looking good!"
+
+instead of:
+
+"No records found."
+
+Prefer:
+
+"Time to use this up!"
+
+instead of:
+
+"Expiring soon."
+
+Prefer:
+
+"Nice! You saved this food from going to waste."
+
+instead of:
+
+"Consumption successful."
+
+---
+
+# 61. RESPONSIBLE CLAIMS
+
+Do not claim exact money saved or environmental impact unless enough data exists to calculate it.
+
+Do not fabricate statistics.
+
+All dashboard numbers must be calculated from actual database records.
+
+---
+
+# 62. FILE STRUCTURE
+
+Create a clean structure similar to:
+
+src/
+  components/
+    ui/
+    layout/
+    food/
+    dashboard/
+    notifications/
+    analytics/
+
+  pages/
+    Landing.tsx
+    Login.tsx
+    Signup.tsx
+    ForgotPassword.tsx
+    ResetPassword.tsx
+    Dashboard.tsx
+    Inventory.tsx
+    AddFood.tsx
+    FoodDetails.tsx
+    EditFood.tsx
+    Notifications.tsx
+    Analytics.tsx
+    Settings.tsx
+    Profile.tsx
+
+  services/
+    supabase.ts
+    foodService.ts
+    notificationService.ts
+    profileService.ts
+    analyticsService.ts
+
+  hooks/
+    useAuth.ts
+    useFoodItems.ts
+    useNotifications.ts
+    useProfile.ts
+
+  utils/
+    expiry.ts
+    validation.ts
+    date.ts
+
+  types/
+    database.ts
+    food.ts
+
+  routes/
+    ProtectedRoute.tsx
+
+  App.tsx
+  main.tsx
+
+supabase/
+  migrations/
+  seed.sql
+  README.md
+
+---
+
+# 63. AUTH GUARD
+
+Create a ProtectedRoute component.
+
+Unauthenticated users trying to access:
+
+/dashboard
+/inventory
+/add
+/notifications
+/analytics
+/settings
+/profile
+
+must be redirected to `/login`.
+
+Authenticated users visiting `/login` or `/signup` should be redirected to `/dashboard`.
+
+---
+
+# 64. SESSION HANDLING
+
+Listen for Supabase auth state changes.
+
+Handle:
+
+- initial session
+- login
+- logout
+- token refresh
+- session expiration
+
+Do not cause flashing between login and dashboard.
+
+---
+
+# 65. MOBILE NAVIGATION
+
+On mobile provide a bottom navigation with:
+
+🏠 Dashboard
+
+🥗 Inventory
+
+➕ Add
+
+🔔 Alerts
+
+⚙️ Settings
+
+Make the Add button visually prominent.
+
+---
+
+# 66. DESKTOP NAVIGATION
+
+Sidebar:
+
+🥗 FreshTrack
+
+Dashboard
+
+Inventory
+
+Expiring Soon
+
+Notifications
+
+Analytics
+
+Settings
+
+Use active route highlighting.
+
+---
+
+# 67. 404 PAGE
+
+Create a polished 404 page.
+
+Message:
+
+"Looks like this page went stale."
+
+Button:
+
+"Back to Dashboard"
+
+---
+
+# 68. FINAL QUALITY BAR
+
+The final product should look like something that could be submitted to a startup competition.
+
+It must NOT look like:
+
+- a tutorial project
+- a default Vite application
+- a generic admin dashboard
+- a plain CRUD interface
+
+It should look polished, intentional, cohesive, and demo-ready.
+
+---
+
+# 69. HACKATHON PRESENTATION FEATURES
+
+Make the application immediately impressive during a live demo.
+
+The main demo flow should be:
+
+1. Landing page
+2. Signup/Login
+3. Dashboard
+4. Add food
+5. Show expiry calculation
+6. Show expiring-soon alert
+7. Show notification
+8. Show inventory filtering
+9. Mark food as consumed
+10. Show analytics updating
+
+Make this flow fast and intuitive.
+
+---
+
+# 70. DO NOT STOP AT SCAFFOLDING
+
+IMPORTANT:
+
+Do NOT simply create a project structure.
+
+Do NOT give me pseudo-code.
+
+Do NOT leave TODO comments for core features.
+
+Actually implement the application.
+
+Actually connect Supabase.
+
+Actually implement authentication.
+
+Actually implement CRUD.
+
+Actually implement RLS.
+
+Actually implement expiry calculations.
+
+Actually implement notifications.
+
+Actually implement dashboard statistics.
+
+Actually implement responsive UI.
+
+Actually implement error handling.
+
+---
+
+# 71. SUPABASE SETUP EXPERIENCE
+
+If Supabase credentials are not available yet:
+
+1. Build the complete application anyway.
+2. Create the SQL migration.
+3. Create `.env.example`.
+4. Clearly tell me which environment variables are required.
+5. Make the app show a helpful configuration message if credentials are missing.
+
+Do not replace Supabase with mock/localStorage as the final implementation.
+
+---
+
+# 72. README
+
+Create a comprehensive README.md containing:
+
+# FreshTrack
+
+## Features
+
+## Tech Stack
+
+## Supabase Setup
+
+1. Create Supabase project
+2. Copy URL
+3. Copy anon key
+4. Add environment variables
+5. Run SQL migration
+6. Start application
+
+## Environment Variables
+
+## Database Schema
+
+## Authentication
+
+## Local Development
+
+## Replit Deployment
+
+## Troubleshooting
+
+## Demo Flow
+
+---
+
+# 73. FINAL VERIFICATION
+
+Before considering the task complete, verify:
+
+### Authentication
+
+[ ] Signup works
+
+[ ] Login works
+
+[ ] Logout works
+
+[ ] Forgot password exists
+
+[ ] Protected routes work
+
+### Database
+
+[ ] Supabase connected
+
+[ ] Tables created
+
+[ ] Foreign keys configured
+
+[ ] RLS enabled
+
+[ ] Policies configured
+
+[ ] Indexes created
+
+### Food Management
+
+[ ] Add food
+
+[ ] View food
+
+[ ] Edit food
+
+[ ] Delete food
+
+[ ] Search
+
+[ ] Filter
+
+[ ] Sort
+
+[ ] Mark consumed
+
+### Expiry
+
+[ ] Expired detection
+
+[ ] Today detection
+
+[ ] Expiring soon detection
+
+[ ] Fresh detection
+
+[ ] Countdown display
+
+### Notifications
+
+[ ] Notification generation
+
+[ ] Notification bell
+
+[ ] Unread count
+
+[ ] Mark read
+
+[ ] Mark all read
+
+### Dashboard
+
+[ ] Dynamic statistics
+
+[ ] Expiring soon list
+
+[ ] Eat these first
+
+[ ] Category chart
+
+[ ] Recent foods
+
+### Analytics
+
+[ ] Dynamic charts
+
+[ ] Consumption statistics
+
+[ ] Expiry statistics
+
+### UX
+
+[ ] Responsive
+
+[ ] Mobile navigation
+
+[ ] Loading states
+
+[ ] Empty states
+
+[ ] Error states
+
+[ ] Toast messages
+
+[ ] Accessible forms
+
+---
+
+# 74. IMPORTANT IMPLEMENTATION RULE
+
+Whenever you have a choice between a quick implementation and a robust implementation, prefer the robust implementation as long as it does not unnecessarily complicate the project.
+
+Prioritize:
+
+1. Working application
+2. Supabase integration
+3. Authentication
+4. Data security
+5. Excellent UX
+6. Responsive design
+7. Hackathon demo quality
+
+---
+
+# 75. START NOW
+
+Begin by:
+
+1. Inspecting the existing Replit project.
+2. Setting up the React/TypeScript application if necessary.
+3. Installing required dependencies.
+4. Setting up Supabase client.
+5. Creating the database migration.
+6. Implementing authentication.
+7. Implementing the application shell.
+8. Implementing dashboard.
+9. Implementing food inventory CRUD.
+10. Implementing expiry logic.
+11. Implementing notifications.
+12. Implementing analytics.
+13. Implementing settings.
+14. Polishing the UI.
+15. Testing the complete application.
+16. Fixing errors.
+17. Running the application successfully.
+
+Do not stop after creating the initial scaffold.
+
+Keep working until the application is a complete, coherent, runnable hackathon prototype.
+
+# FINAL PRODUCT NAME
+
+Use this branding consistently:
+
+## FreshTrack
+
+Tagline:
+
+### "Never Waste Food Again."
+
+Primary visual identity:
+
+🥗 FreshTrack
+
+Make the final application feel fast, friendly, intelligent, and trustworthy.

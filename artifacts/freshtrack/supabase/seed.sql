@@ -1,0 +1,8 @@
+-- FreshTrack demo data is seeded through an authenticated, user-scoped RPC.
+-- Do not run this from the Supabase SQL Editor (there is no authenticated user
+-- there). From a signed-in Supabase client, call:
+--
+--   supabase.rpc("seed_demo_food_items")
+--
+-- The function inserts 12 realistic foods only when the current user's active
+-- inventory is empty. RLS and auth.uid() keep these rows private to that user.

@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "FreshTrack"
+description = "A food expiry tracker that helps households manage kitchen inventory, spot food to use next, and get timely reminders before items expire. Includes Supabase authentication, private household data, inventory management, and analytics."
+version = "1.0.0"
+id = "artifacts/freshtrack"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23974
+
+[services.development]
+run = "pnpm --filter @workspace/freshtrack run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/freshtrack", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/freshtrack/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23974"
+BASE_PATH = "/"
